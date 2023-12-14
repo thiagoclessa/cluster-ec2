@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Cluster
+metadata:
+  name: "cluster-ec2-demo-a"
+  environment:
+    cluster_type: ec2
+  annotations:
+    github.com/project-slug: veecode-homolog/cluster-ec2-demo-a
+    backstage.io/techdocs-ref: dir:.
+    github.com/workflows: terraform-deploy.yml,terraform-destroy.yml
+spec:
+  type: devops
+  lifecycle: experimental
+  owner: "group:default/admin"
+  
