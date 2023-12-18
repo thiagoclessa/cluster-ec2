@@ -55,7 +55,7 @@ jobs:
 
       - name: Aguarde a Cluster ficar ativo
         run: |
-          HOST=`aws ec2 describe-instances --filters 'Name=tag:Name,Values=cluster-ec2-demo-a'   --output text --query 'Reservations[*].Instances[*].PublicIpAddress'`
+          HOST=`aws ec2 describe-instances --filters 'Name=tag:Name,Values=cluster-federation'   --output text --query 'Reservations[*].Instances[*].PublicIpAddress'`
           while ! nc -z $HOST $PORT; do
             echo "Aguardando Cluster ficar Ready..."
             sleep 2
