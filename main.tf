@@ -1,27 +1,30 @@
 data "aws_availability_zones" "available" {
   state = "available"
 }
-data "aws_ami" "ubuntu-linux-2004" {
-  most_recent = true
-  owners      = ["099720109477"] 
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+data "aws_ami" "ubuntu" {
+    most_recent = true
+    filter {
+        name   = "name"
+        values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    }
+    filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+    }
+    owners = ["099720109477"]
 }
+
 
 ### REDE
 
-
+resource "aws_vpc" "vpc_test" {
+  cidr_block = "local.config.VPC_CIDRblock"
+}
 resource "aws_internet_gateway" "igw" {
-  vpc_id = local.config.VPC_ID
+  vpc_id = aws_vpc.vpc_test.id
 }
 resource "aws_subnet" "public_subnet" {
-  vpc_id = local.config.VPC_ID
+  vpc_id = aws_vpc.vpc_test.id
   cidr_block = local.config.publicsCIDRblock
   map_public_ip_on_launch = "true" 
   availability_zone = local.config.availabilityZone
@@ -30,7 +33,7 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 resource "aws_route_table" "public_rt" {
-  vpc_id = local.config.VPC_ID
+  vpc_id = aws_vpc.vpc_test.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
@@ -47,7 +50,7 @@ resource "aws_route_table_association" "public" {
 resource "aws_security_group" "web_security_group" {
   name        = "access_cluster_SG"
   description = "Allow SSH and HTTP"
-  vpc_id      = local.config.VPC_ID
+  vpc_id      = aws_vpc.vpc_test.id
   ingress {
     description = "SSH from VPC"
     from_port   = 22
@@ -70,9 +73,9 @@ resource "aws_security_group" "web_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
     }
   ingress {
-    description = "Cluster Access"
-    from_port   = 6550
-    to_port     = 6550
+    description = "HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     }
