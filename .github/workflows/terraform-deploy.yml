@@ -35,31 +35,15 @@ jobs:
           terraform plan -no-color -out plan_cache.json 
       - name: Terraform apply
         run: terraform apply -input=false -no-color -auto-approve plan_cache.json
-  kubeconfig:
-    runs-on: ubuntu-latest
-    needs: apply
-    steps:
-      - uses: actions/checkout@v3
-      - uses: hashicorp/setup-terraform@v2
-      - name: Write secret to file
-        run: |
-          echo "${{ secrets.KEYPAIR }}" > cert.pem
-          chmod 600 cert.pem
-          
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
+  
       - name: Aguarde a Cluster ficar ativo
         run: |
-          HOST=`aws ec2 describe-instances --filters 'Name=tag:Name,Values=cluster-federation'   --output text --query 'Reservations[*].Instances[*].PublicIpAddress'`
-          while ! nc -z $HOST $PORT; do
-            echo "Aguardando Cluster ficar Ready..."
-            sleep 2
-          done
-          echo "Cluster Ready!"
+        HOST=`aws ec2 describe-instances --filters 'Name=tag:Name,Values=cluster-federation'   --output text --query 'Reservations[*].Instances[*].PublicIpAddress'`
+        while ! nc -z $HOST $PORT; do
+          echo "Aguardando Cluster ficar Ready..."
+          sleep 2
+        done
+        echo "Cluster Ready!"
+
 
 
